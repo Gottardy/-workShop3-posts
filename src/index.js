@@ -1,6 +1,102 @@
 /**
- * This file is just a silly example to show everything working in the browser.
- * When you're ready to start on your site, clear the file. Happy hacking!
- **/
+ * 
+ */
+const listElement = document.querySelector(".posts");
+const postTemplate = document.getElementById("single-post");
+const form = document.querySelector("#new-post form");
+const fetchButton = document.querySelector("#available-posts button");
+const postList = document.querySelector("#posts-container");
 
-console.log('Happy hacking :)')
+/**
+ * 
+ * @param {*} method 
+ * @param {*} url 
+ * @param {*} data 
+ * @returns 
+ */
+function sendHTTPRequest(method, url, data) {
+    return fetch(url, {
+      method: method,
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((response) => {
+      return response.json();
+    });
+  }
+
+  /**
+   * 
+   */
+  async function fecthPosts() {
+    const responseData = await sendHTTPRequest(
+      "GET",
+      "https://jsonplaceholder.typicode.com/posts"
+    );
+    console.log(responseData);
+    const listOfPosts = responseData;
+  
+    for (const post of listOfPosts) {
+      const postContainer = document.createElement("article");
+      postContainer.id = post.id;
+      postContainer.classList.add("post-item");
+  
+      const title = document.createElement("h2");
+      title.textContent = post.title;
+  
+      const body = document.createElement("p");
+      body.textContent = post.body;
+  
+      const button = document.createElement("button");
+      button.textContent = "DELETE Content";
+  
+      postContainer.append(title);
+      postContainer.append(body);
+      postContainer.append(button);
+  
+      listElement.append(postContainer);
+    }
+  }
+  
+  fetchButton.addEventListener("click", fecthPosts);
+
+  /**
+   * 
+   * @param {*} title 
+   * @param {*} content 
+   */
+  async function createPost(title, content) {
+    const userId = Math.random();
+    const post = {
+      title: title,
+      body: content,
+      userId: userId,
+    };
+  
+    sendHTTPRequest("POST", "https://jsonplaceholder.typicode.com/posts", post);
+  }
+  
+  /**
+   * 
+   */
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const title = event.currentTarget.querySelector("#title").value;
+    const content = event.currentTarget.querySelector("#content").value;
+  
+    createPost(title, content);
+  });
+
+
+  /**
+   * 
+  */
+  postList.addEventListener('click',(event)=>{
+    console.log(event.target)
+    if(event.target.tagName==='BUTTON'){
+        const postId = event.target.closest("article").id
+        console.log(postId)
+        sendHTTPRequest('DELETE',`https://jsonplaceholder.typicode.com/posts/${postId}`)
+    }
+  })
